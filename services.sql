@@ -16,6 +16,8 @@ create table authories(
 create table user_authority(
 	id_user INT(10) NOT NULL,
 	id_authories INT(10) NOT NULL,
+	PRIMARY KEY(id_user),
+	PRIMARY KEY(id_authories),
 	FOREIGN KEY(id_user) REFERENCES users(id_user),
 	FOREIGN KEY(id_authories) REFERENCES authories(id_authories)
 );
