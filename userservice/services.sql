@@ -20,3 +20,4 @@ create table user_authority(
 	FOREIGN KEY(id_user) REFERENCES users(id_user),
 	FOREIGN KEY(id_authories) REFERENCES authories(id_authories)
 );
+	
