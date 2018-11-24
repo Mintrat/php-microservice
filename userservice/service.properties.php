@@ -1,7 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Viktor
- * Date: 22.11.2018
- * Time: 21:07
- */
+
+return array(
+    'db_name' => 'userservicedb',
+    'db_host' => 'localhost',
+    'db_password' => '',
+    'db_user' => 'root'
+);
