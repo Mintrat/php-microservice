@@ -12,14 +12,15 @@ namespace MicroService;
 class UserServiceDB
 {
     private $propertiesDB;
+    public $db;
 
     function __construct()
     {
-        $this->setProperties();
-        $this->connectDB();
+        $this->retrieveProperties();
+        $this->db = $this->connectDB();
     }
 
-    private function setProperties()
+    private function retrieveProperties()
     {
         $pathToproperties = __DIR__ . '/service.properties.php';
         if (file_exists($pathToproperties)) {
@@ -61,6 +62,8 @@ class UserServiceDB
             return $db;
         } else {
             $this->createDB($db);
+            $db->query("use {$dbName}");
+            return $db;
         }
     }
 
