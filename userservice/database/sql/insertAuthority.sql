@@ -1,0 +1,1 @@
+INSERT INTO `userservicedb`.`authories` (`authority`) VALUES ('admin'), ('user'), ('moderator');

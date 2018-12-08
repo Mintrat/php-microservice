@@ -6,13 +6,15 @@
  * Time: 21:16
  */
 
-namespace MicroService;
+namespace MicroService\Database;
+
+use MicroService\database\Tables;
 
 
 class UserServiceDB
 {
     private $propertiesDB;
-    public $db;
+    private $db;
 
     function __construct()
     {
@@ -20,11 +22,19 @@ class UserServiceDB
         $this->db = $this->connectDB();
     }
 
+    function __get($name)
+    {
+        if ($this->tableExist($name)){
+            return new Tables($name, $this->db);
+        }
+        return null;
+    }
+
     private function retrieveProperties()
     {
-        $pathToproperties = __DIR__ . '/service.properties.php';
-        if (file_exists($pathToproperties)) {
-            $this->propertiesDB = include $pathToproperties;
+        $pathToProperties = __DIR__ . '/../service.properties.php';
+        if (file_exists($pathToProperties)) {
+            $this->propertiesDB = include $pathToProperties;
             $this->checkPropertiesDB($this->propertiesDB);
         } else {
             throw new \Exception('File with properties for database not found');
@@ -80,16 +90,43 @@ class UserServiceDB
 
     private function createDB(\PDO $db)
     {
-        $db->query($this->getSQLScript());
+        $db->query($this->getSQLScript('createDB'));
     }
 
-    private function getSQLScript()
+    private function getSQLScript($name)
     {
-        $path = __DIR__ . '/services.sql';
+        $path = __DIR__ . "/sql/{$name}.sql";
         if (file_exists($path)) {
             return file_get_contents($path);
         } else {
             throw new \Exception('File with sql for create database not found');
         }
+    }
+
+    function createDefaultAuthority()
+    {
+        $query = $this->getSQLScript('insertAuthority');
+        $this->db->query($query);
+    }
+
+    function tableExist($tableName)
+    {
+        $tableList = $this->getTables();
+        if (in_array($tableName, $tableList)) {
+            return true;
+        }
+        return false;
+    }
+
+    function getTables()
+    {
+        $tables = $this->db->query('show tables');
+        $listTable = [];
+        while ($result = $tables->fetch(\PDO::FETCH_ASSOC)){
+            foreach ($result as $table){
+                $listTable[] = $table;
+            }
+        }
+        return $listTable;
     }
 }
