@@ -8,7 +8,7 @@
 
 namespace MicroService\Database;
 
-use MicroService\database\Tables;
+use MicroService\Database\Tables;
 
 
 class UserServiceDB
@@ -24,8 +24,12 @@ class UserServiceDB
 
     function __get($name)
     {
+        if ($this->$name) {
+            return $this->$name;
+        }
         if ($this->tableExist($name)){
-            return new Tables($name, $this->db);
+            $this->$name = new Tables($name, $this->db);
+            return $this->$name;
         }
         return null;
     }

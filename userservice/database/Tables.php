@@ -6,13 +6,14 @@
  * Time: 19:51
  */
 
-namespace MicroService\database;
+namespace MicroService\Database;
 
 
 class Tables
 {
     private $table;
     private $db;
+    private $lastInsertId;
 
     function __construct($table, \PDO $db)
     {
@@ -24,32 +25,39 @@ class Tables
     {
         $data = $this->formatDataForWriting($list);
         $query = "INSERT INTO $this->table {$data[0]} VALUES {$data[1]}";
-        return $this->db->query($query);
+        $this->db->query($query);
+        $lastInsertId = $this->db->lastInsertId();
+        $this->lastInsertId = $lastInsertId;
+    }
 
-
+    function getLastInsertId()
+    {
+        return $this->lastInsertId;
     }
 
     private function formatDataForWriting(array $list)
     {
-        $columns = array_shift($list);
+        $columns = array_keys($list);
         $columns = '(' . implode(', ', $columns) . ')';
-
-        for ($values = '', $length = count($list), $count = 1; $count <= $length; ++$count) {
-            $elements = array_shift($list);
-            $elements = array_map(function ($element){
-                return "'{$element}'";
-            },$elements);
-            $values .= '(' . implode(', ', $elements) . ')';
-
-            if ($count != $length) {
-                $values .= ', ';
-            }
-        }
+        $values = "('" .implode("', '", $list) . "')";
 
         return array($columns, $values);
     }
 
-    private function getColumns()
+    function getData($columns = '*')
+    {
+        if (is_array($columns)) {
+            $columns = implode(', ', $columns);
+        }
+        $data = $this->db->query("SELECT $columns FROM $this->table");
+        $result = [];
+        while ($currentElement = $data->fetch(\PDO::FETCH_ASSOC)) {
+            $result[] = $currentElement;
+        }
+        return $result;
+    }
+
+    function getColumns()
     {
         $result = $this->db->query('SHOW COLUMNS FROM ' . $this->table);
         $columns = [];
