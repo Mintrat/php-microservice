@@ -24,8 +24,10 @@ class Tables
     function insertInto(array $list)
     {
         $data = $this->formatDataForWriting($list);
-        $query = "INSERT INTO $this->table {$data[0]} VALUES {$data[1]}";
-        $this->db->query($query);
+        $query = "INSERT INTO $this->table {$data['columns']} VALUES {$data['parameters']}";
+        $statement = $this->db->prepare($query);
+        $statement->execute($data['relatedValues']);
+
         $lastInsertId = $this->db->lastInsertId();
         $this->lastInsertId = $lastInsertId;
     }
@@ -37,11 +39,23 @@ class Tables
 
     private function formatDataForWriting(array $list)
     {
-        $columns = array_keys($list);
-        $columns = '(' . implode(', ', $columns) . ')';
-        $values = "('" .implode("', '", $list) . "')";
+        $keys = array_keys($list);
+        $parameters = '(:' . implode(', :', $keys) . ')';
+        $columns = '(' . implode(', ', $keys) . ')';
+        $relatedValues = $this->bindParameters($list);
 
-        return array($columns, $values);
+        return array('columns' => $columns, 'parameters' => $parameters, 'relatedValues' => $relatedValues);
+    }
+
+    private function bindParameters(array $parameters)
+    {
+        $bindParam = [];
+        foreach ($parameters as $key => $value) {
+            $key = ':' . $key;
+            $bindParam[$key] = $value;
+        }
+
+        return $bindParam;
     }
 
     function getData($columns = '*')

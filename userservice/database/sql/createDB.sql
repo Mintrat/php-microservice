@@ -1,23 +1,24 @@
 create database userservicedb;
 use userservicedb;
 create table users(
-	id_user INT(10) AUTO_INCREMENT,
+	user_id INT(10) AUTO_INCREMENT,
 	name VARCHAR(50) NOT NULL,
 	password VARCHAR(15) NOT NULL,
-	PRIMARY KEY (id_user)
+	PRIMARY KEY (user_id)
 );
 
-create table authories(
-	id_authories INT(10) AUTO_INCREMENT,
+create table authorities(
+	authority_id INT(10) AUTO_INCREMENT,
 	authority VARCHAR(50) NOT NULL,
-	PRIMARY KEY(id_authories)
+	PRIMARY KEY(authority_id)
 );
 
 create table user_authority(
-	id_user INT(10) NOT NULL,
-	id_authories INT(10) NOT NULL,
-	PRIMARY KEY(id_user, id_authories),	
-	FOREIGN KEY(id_user) REFERENCES users(id_user),
-	FOREIGN KEY(id_authories) REFERENCES authories(id_authories)
+	user_id INT(10) NOT NULL,
+	authority_id INT(10) NOT NULL,
+	PRIMARY KEY(user_id, authority_id),
+	FOREIGN KEY(user_id) REFERENCES users(user_id),
+	FOREIGN KEY(authority_id) REFERENCES authorities(authority_id)
 );
-	
+
+INSERT INTO `userservicedb`.`authorities` (`authority`) VALUES ('admin'), ('user'), ('moderator');

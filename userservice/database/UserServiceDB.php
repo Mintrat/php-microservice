@@ -15,6 +15,7 @@ class UserServiceDB
 {
     private $propertiesDB;
     private $db;
+    private static $pathToProperties = __DIR__ . '/../service.properties.php';
 
     function __construct()
     {
@@ -24,19 +25,16 @@ class UserServiceDB
 
     function __get($name)
     {
-        if ($this->$name) {
-            return $this->$name;
-        }
-        if ($this->tableExist($name)){
+        if (!$this->$name && $this->tableExist($name)) {
             $this->$name = new Tables($name, $this->db);
-            return $this->$name;
         }
-        return null;
+
+        return $this->$name;
     }
 
     private function retrieveProperties()
     {
-        $pathToProperties = __DIR__ . '/../service.properties.php';
+        $pathToProperties = self::$pathToProperties;
         if (file_exists($pathToProperties)) {
             $this->propertiesDB = include $pathToProperties;
             $this->checkPropertiesDB($this->propertiesDB);
@@ -71,14 +69,11 @@ class UserServiceDB
         $dbUser = $this->propertiesDB['db_user'];
 
         $db = new \PDO("mysql:host={$dbHost};dbname=", $dbUser, $dbPassword);
-        if ($this->dbExists($db, $dbName)) {
-            $db->query("use {$dbName}");
-            return $db;
-        } else {
+        if (!$this->dbExists($db, $dbName)) {
             $this->createDB($db);
-            $db->query("use {$dbName}");
-            return $db;
         }
+        $db->query("use {$dbName}");
+        return $db;
     }
 
     private function dbExists($db, $dbName)
@@ -126,8 +121,8 @@ class UserServiceDB
     {
         $tables = $this->db->query('show tables');
         $listTable = [];
-        while ($result = $tables->fetch(\PDO::FETCH_ASSOC)){
-            foreach ($result as $table){
+        while ($result = $tables->fetch(\PDO::FETCH_ASSOC)) {
+            foreach ($result as $table) {
                 $listTable[] = $table;
             }
         }

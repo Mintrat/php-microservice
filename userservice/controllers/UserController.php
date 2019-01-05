@@ -30,53 +30,51 @@ class UserController
             $this->db->users->insertInto($data);
             $userId = $this->db->users->getLastInsertId();
 
-            $authorityId = $this->getIdAuthority($authority);
+            $authorityId = $this->getAuthorityId($authority);
             $this->setAuthorityUser($authorityId, $userId);
         }
     }
 
-    function getAllAuthority()
+    function getAuthorities()
     {
         if (empty($this->authority)) {
-            $authority = [];
-            $listAuthority = $this->db->authories->getData();
+            $authorities = [];
+            //$authorityList = $this->db->authorities->getData();
 
-            foreach ($listAuthority as $val) {
-                $authority[
-                $val['id_authories']
-                ] = $val['authority'];
+            foreach ($this->db->authorities->getData() as $val) {
+                $authorities[$val['authority_id']] = $val['authority'];
             }
+
+            $this->authority = $authorities;
         } else {
-            $authority = $this->authority;
+            $authorities = $this->authority;
         }
 
-        return $authority;
+        return $authorities;
     }
 
-    function getIdAuthority($authority)
+    function getAuthorityId($authorityName)
     {
-        $listAuthority = $this->getAllAuthority();
+        $authorityList = $this->getAuthorities();
 
-        foreach ($listAuthority as $key => $val) {
-            if ($val == $authority){
-                break;
+        foreach ($authorityList as $key => $val) {
+            if ($val == $authorityName) {
+                return $key;
             }
         }
-
-        return $key;
     }
 
     function authorityExist($authority)
     {
-        $listAllAuthority = $this->getAllAuthority();
-        return in_array($authority, $listAllAuthority);
+        $allAuthorityList = $this->getAuthorities();
+        return in_array($authority, $allAuthorityList);
     }
 
     function setAuthorityUser($authorityId, $userId)
     {
         $data = [
-            'id_authories' => $authorityId,
-            'id_user' => $userId
+            'authority_id' => $authorityId,
+            'user_id' => $userId
         ];
 
         $this->db->user_authority->insertInto($data);
