@@ -31,7 +31,7 @@ class UserController
             $userId = $this->db->users->getLastInsertId();
 
             $authorityId = $this->getAuthorityId($authority);
-            $this->setAuthorityUser($authorityId, $userId);
+            $this->writeAuthorityUser($authorityId, $userId);
         }
     }
 
@@ -39,7 +39,7 @@ class UserController
     {
         if (empty($this->authority)) {
             $authorities = [];
-            //$authorityList = $this->db->authorities->getData();
+            $authorityList = $this->db->authorities->getData();
 
             foreach ($this->db->authorities->getData() as $val) {
                 $authorities[$val['authority_id']] = $val['authority'];
@@ -70,7 +70,7 @@ class UserController
         return in_array($authority, $allAuthorityList);
     }
 
-    function setAuthorityUser($authorityId, $userId)
+    function writeAuthorityUser($authorityId, $userId)
     {
         $data = [
             'authority_id' => $authorityId,
