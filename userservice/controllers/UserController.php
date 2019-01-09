@@ -32,6 +32,8 @@ class UserController
 
             $authorityId = $this->getAuthorityId($authority);
             $this->writeAuthorityUser($authorityId, $userId);
+
+            $this->db->write();
         }
     }
 
@@ -41,7 +43,7 @@ class UserController
             $authorities = [];
             $authorityList = $this->db->authorities->getData();
 
-            foreach ($this->db->authorities->getData() as $val) {
+            foreach ($authorityList as $val) {
                 $authorities[$val['authority_id']] = $val['authority'];
             }
 

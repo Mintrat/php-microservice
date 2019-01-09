@@ -128,4 +128,18 @@ class UserServiceDB
         }
         return $listTable;
     }
+
+    function write()
+    {
+        try{
+
+            $this->db->commit();
+            return true;
+        } catch (\Exception $e){
+
+            $this->db->rollBack();
+            //echo $e->getMessage();
+            return false;
+        }
+    }
 }

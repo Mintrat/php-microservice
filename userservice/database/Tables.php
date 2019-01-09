@@ -23,21 +23,18 @@ class Tables
 
     function insertInto(array $list)
     {
-        try{
             $data = $this->formatDataForWriting($list);
             $query = "INSERT INTO $this->table {$data['columns']} VALUES {$data['parameters']}";
-            $this->db->beginTransaction();
+
+            if(!$this->db->inTransaction()){
+                $this->db->beginTransaction();
+            }
+
             $statement = $this->db->prepare($query);
             $statement->execute($data['relatedValues']);
 
             $lastInsertId = $this->db->lastInsertId();
             $this->lastInsertId = $lastInsertId;
-            $this->db->commit();
-
-        } catch (\Exception $e){
-            $this->db->rollBack();
-            echo $e->getMessage();
-        }
     }
 
     function getLastInsertId()
@@ -88,4 +85,6 @@ class Tables
         }
         return $columns;
     }
+
+
 }
