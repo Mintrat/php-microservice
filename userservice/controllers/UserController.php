@@ -27,13 +27,22 @@ class UserController
                 'name' => htmlspecialchars($name),
                 'password' => htmlspecialchars($password),
             );
-            $this->db->users->insertInto($data);
-            $userId = $this->db->users->getLastInsertId();
 
-            $authorityId = $this->getAuthorityId($authority);
-            $this->writeAuthorityUser($authorityId, $userId);
+            try{
+                $this->db->beginTransaction();
 
-            $this->db->write();
+                $this->db->users->insertInto($data);
+                $userId = $this->db->users->getLastInsertId();
+
+                $authorityId = $this->getAuthorityId($authority);
+                $this->writeAuthorityUser($authorityId, $userId);
+                $this->db->commit();
+
+            }catch (\Exception $e){
+
+                $this->db->rollBack();
+            }
+
         }
     }
 

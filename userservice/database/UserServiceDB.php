@@ -129,6 +129,16 @@ class UserServiceDB
         return $listTable;
     }
 
+    function beginTransaction()
+    {
+        $this->db->beginTransaction();
+    }
+
+    function commit()
+    {
+        $this->db->commit();
+    }
+
     function write()
     {
         try{
