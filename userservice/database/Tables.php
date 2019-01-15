@@ -26,10 +26,6 @@ class Tables
             $data = $this->formatDataForWriting($list);
             $query = "INSERT INTO $this->table {$data['columns']} VALUES {$data['parameters']}";
 
-            if(!$this->db->inTransaction()){
-                $this->db->beginTransaction();
-            }
-
             $statement = $this->db->prepare($query);
             $statement->execute($data['relatedValues']);
 
@@ -63,12 +59,19 @@ class Tables
         return $bindParam;
     }
 
-    function getData($columns = '*')
+    function getData($columns = '*',  $requirement = '')
     {
         if (is_array($columns)) {
             $columns = implode(', ', $columns);
         }
-        $data = $this->db->query("SELECT $columns FROM $this->table");
+        $query = "SELECT $columns FROM $this->table";
+
+        if($requirement){
+            $query .= " $requirement";
+        }
+
+        $data = $this->db->query($query);
+
         $result = [];
         while ($currentElement = $data->fetch(\PDO::FETCH_ASSOC)) {
             $result[] = $currentElement;

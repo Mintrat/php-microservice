@@ -30,17 +30,16 @@ class UserController
 
             try{
                 $this->db->beginTransaction();
-
                 $this->db->users->insertInto($data);
                 $userId = $this->db->users->getLastInsertId();
-
                 $authorityId = $this->getAuthorityId($authority);
                 $this->writeAuthorityUser($authorityId, $userId);
                 $this->db->commit();
-
+                return true;
             }catch (\Exception $e){
 
                 $this->db->rollBack();
+                return false;
             }
 
         }
@@ -89,5 +88,22 @@ class UserController
         ];
 
         $this->db->user_authority->insertInto($data);
+    }
+
+    function checkUser($name, $password)
+    {
+        $data = [
+            'name' => $name,
+            'password' => $password
+        ];
+
+        $requirement = "WHERE name = '{$data['name']}' AND password = '{$data['password']}'";
+        $data = $this->db->users->getData('name, password', $requirement);
+
+        if(empty($data[0])){
+            return 401;
+        }
+
+        return 200;
     }
 }
