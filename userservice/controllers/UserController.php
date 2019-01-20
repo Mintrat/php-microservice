@@ -97,8 +97,8 @@ class UserController
             'password' => $password
         ];
 
-        $requirement = "WHERE name = '{$data['name']}' AND password = '{$data['password']}'";
-        $data = $this->db->users->getData('name, password', $requirement);
+        $requirement = "WHERE name = :name AND password = :password";
+        $data = $this->db->users->getData($data, $requirement);
 
         if(empty($data[0])){
             return 401;

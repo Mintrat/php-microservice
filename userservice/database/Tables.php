@@ -23,14 +23,14 @@ class Tables
 
     function insertInto(array $list)
     {
-            $data = $this->formatDataForWriting($list);
-            $query = "INSERT INTO $this->table {$data['columns']} VALUES {$data['parameters']}";
+        $data = $this->formatDataForWriting($list);
+        $query = "INSERT INTO $this->table {$data['columns']} VALUES {$data['parameters']}";
 
-            $statement = $this->db->prepare($query);
-            $statement->execute($data['relatedValues']);
+        $statement = $this->db->prepare($query);
+        $statement->execute($data['relatedValues']);
 
-            $lastInsertId = $this->db->lastInsertId();
-            $this->lastInsertId = $lastInsertId;
+        $lastInsertId = $this->db->lastInsertId();
+        $this->lastInsertId = $lastInsertId;
     }
 
     function getLastInsertId()
@@ -59,21 +59,38 @@ class Tables
         return $bindParam;
     }
 
-    function getData($columns = '*',  $requirement = '')
+    function getData($data = '*', $requirement = '')
     {
-        if (is_array($columns)) {
+        $field = $data;
+        if (is_array($field)) {
+
+            if (!$requirement) {
+                return false;
+            }
+
+            $formatField = [];
+            foreach ($field as $key => $value) {
+                $key = ":{$key}";
+                $formatField[$key] = $value;
+            }
+            $columns = array_keys($data);
             $columns = implode(', ', $columns);
-        }
-        $query = "SELECT $columns FROM $this->table";
-
-        if($requirement){
+            $query = "SELECT {$columns} FROM $this->table";
             $query .= " $requirement";
+            $statement = $this->db->prepare($query);
+
+            foreach ($formatField as $key => $value){
+                $statement->bindValue($key, $value);
+            }
+        } else {
+            $query = "SELECT {$data} FROM $this->table";
+            $statement = $this->db->prepare($query);
         }
 
-        $data = $this->db->query($query);
 
+        $statement->execute();
         $result = [];
-        while ($currentElement = $data->fetch(\PDO::FETCH_ASSOC)) {
+        while ($currentElement = $statement->fetch(\PDO::FETCH_ASSOC)) {
             $result[] = $currentElement;
         }
         return $result;
