@@ -3,7 +3,7 @@ use userservicedb;
 create table users(
 	user_id INT(10) AUTO_INCREMENT,
 	name VARCHAR(50) NOT NULL,
-	password VARCHAR(15) NOT NULL,
+	password VARCHAR(255) NOT NULL,
 	PRIMARY KEY (user_id)
 );
 

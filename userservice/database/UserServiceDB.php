@@ -8,7 +8,7 @@
 
 namespace MicroService\Database;
 
-use MicroService\Database\Tables;
+use MicroService\Database\Table;
 
 
 class UserServiceDB
@@ -23,26 +23,40 @@ class UserServiceDB
         $this->db = $this->connectDB();
     }
 
+    /** instance Table if table exist in database
+     * @param $name string - table name
+     * @return object - Tables
+     */
     function __get($name)
     {
         if (!$this->$name && $this->tableExist($name)) {
-            $this->$name = new Tables($name, $this->db);
+            $this->$name = new Table($name, $this->db);
         }
 
         return $this->$name;
     }
 
+    /**
+     * write options in propertiesDB
+     * @throws \Exception else not found file with DB options
+     */
     private function retrieveProperties()
     {
         $pathToProperties = self::$pathToProperties;
         if (file_exists($pathToProperties)) {
-            $this->propertiesDB = include $pathToProperties;
-            $this->checkPropertiesDB($this->propertiesDB);
+            $properties = include $pathToProperties;
+            $this->checkPropertiesDB($properties);
+            $this->propertiesDB = $properties;
         } else {
             throw new \Exception('File with properties for database not found');
         }
     }
 
+    /**
+     * validates parameters
+     * @param $properties
+     * @throws \Exception
+     */
     private function checkPropertiesDB($properties)
     {
         $errors = '';
@@ -56,11 +70,15 @@ class UserServiceDB
             }
         }
 
-        if (!$errors == '') {
+        if (!($errors == '')) {
             throw new \Exception($errors);
         }
     }
 
+    /**
+     * create connect DB
+     * @return \PDO
+     */
     private function connectDB()
     {
         $dbName = $this->propertiesDB['db_name'];
@@ -76,7 +94,13 @@ class UserServiceDB
         return $db;
     }
 
-    private function dbExists($db, $dbName)
+    /**
+     * check exist database
+     * @param \PDO $db
+     * @param string $dbName
+     * @return bool
+     */
+    private function dbExists(\PDO  $db, string $dbName)
     {
         $lisResult = $db->query('show databases');
         foreach ($lisResult as $row) {
@@ -87,12 +111,22 @@ class UserServiceDB
         return false;
     }
 
+    /**
+     * @param \PDO $db
+     * @throws \Exception
+     */
     private function createDB(\PDO $db)
     {
         $db->query($this->getSQLScript('createDB'));
     }
 
-    private function getSQLScript($name)
+    /**
+     * return sql script for execute
+     * @param string $name
+     * @return false|string
+     * @throws \Exception
+     */
+    private function getSQLScript(string $name)
     {
         $path = __DIR__ . "/sql/{$name}.sql";
         if (file_exists($path)) {
@@ -102,13 +136,21 @@ class UserServiceDB
         }
     }
 
+    /** create default authority in database
+     * @throws \Exception
+     */
     function createDefaultAuthority()
     {
         $query = $this->getSQLScript('insertAuthority');
         $this->db->query($query);
     }
 
-    function tableExist($tableName)
+    /**
+     * check table exist in database
+     * @param string $tableName
+     * @return bool
+     */
+    function tableExist(string $tableName)
     {
         $tableList = $this->getTables();
         if (in_array($tableName, $tableList)) {
@@ -117,6 +159,10 @@ class UserServiceDB
         return false;
     }
 
+    /**
+     * get all tables from database
+     * @return array
+     */
     function getTables()
     {
         $tables = $this->db->query('show tables');
@@ -129,11 +175,17 @@ class UserServiceDB
         return $listTable;
     }
 
+    /**
+     * begin \PDO transaction
+     */
     function beginTransaction()
     {
         $this->db->beginTransaction();
     }
 
+    /**
+     * make commit \PDO
+     */
     function commit()
     {
         $this->db->commit();

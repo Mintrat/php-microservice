@@ -9,7 +9,7 @@
 namespace MicroService\Database;
 
 
-class Tables
+class Table
 {
     private $table;
     private $db;
@@ -21,6 +21,9 @@ class Tables
         $this->db = $db;
     }
 
+    /**
+     * @param array $list - data for write into database
+     */
     function insertInto(array $list)
     {
         $data = $this->formatDataForWriting($list);
@@ -33,11 +36,19 @@ class Tables
         $this->lastInsertId = $lastInsertId;
     }
 
+    /** return the last recorded from the database
+     * @return mixed
+     */
     function getLastInsertId()
     {
         return $this->lastInsertId;
     }
 
+    /**
+     * formatting data for write into database
+     * @param array $list
+     * @return array
+     */
     private function formatDataForWriting(array $list)
     {
         $keys = array_keys($list);
@@ -48,6 +59,11 @@ class Tables
         return array('columns' => $columns, 'parameters' => $parameters, 'relatedValues' => $relatedValues);
     }
 
+    /**
+     * formatting data :key => value
+     * @param array $parameters
+     * @return array
+     */
     private function bindParameters(array $parameters)
     {
         $bindParam = [];
@@ -59,14 +75,17 @@ class Tables
         return $bindParam;
     }
 
+    /**
+     * return data from database
+     * @param mixed $data SELECT request
+     * @param string $requirement condition for data retrieval
+     * @return array|bool
+     */
     function getData($data = '*', $requirement = '')
     {
         $field = $data;
         if (is_array($field)) {
 
-            if (!$requirement) {
-                return false;
-            }
 
             $formatField = [];
             foreach ($field as $key => $value) {
@@ -80,6 +99,9 @@ class Tables
             $statement = $this->db->prepare($query);
 
             foreach ($formatField as $key => $value){
+                if (empty($value)) {
+                    continue;
+                }
                 $statement->bindValue($key, $value);
             }
         } else {
@@ -96,6 +118,10 @@ class Tables
         return $result;
     }
 
+    /**
+     * return columns from table
+     * @return array
+     */
     function getColumns()
     {
         $result = $this->db->query('SHOW COLUMNS FROM ' . $this->table);
